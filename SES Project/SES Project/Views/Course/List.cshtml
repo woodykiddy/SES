@@ -1,0 +1,23 @@
+﻿@model IEnumerable<SES.Domain.Entities.Course>
+
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List</h2>
+
+@foreach (var c in Model)
+{
+    <div class="item">
+        <h4 class="modal-header">@c.Code - @c.Name</h4>
+        <div>
+            <p>
+                @c.Description
+            </p>
+            <span>
+                @c.Price.ToString("c")
+            </span>
+        </div>
+    </div>
+}
