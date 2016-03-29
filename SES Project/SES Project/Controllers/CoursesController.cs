@@ -9,17 +9,19 @@ using System.Web;
 using System.Web.Mvc;
 using SES.Domain.DatabaseContext;
 using SES.Domain.Entities;
+using SES.Domain.Repositories;
 
 namespace SES_Project.Controllers
 {
     public class CoursesController : Controller
     {
-        private EFDBContext db = new EFDBContext();
+        //private EFDBContext db = new EFDBContext();
+        private EFCourseRepository courseRepo = new EFCourseRepository();
 
         // GET: Courses
         public async Task<ActionResult> Index()
         {
-            return View(await db.Courses.ToListAsync());
+            return View(await courseRepo.GetAllAsync());
         }
 
         // GET: Courses/Details/5
@@ -29,7 +31,7 @@ namespace SES_Project.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = await db.Courses.FindAsync(id);
+            Course course = await courseRepo.GetByIdAsync(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -53,8 +55,7 @@ namespace SES_Project.Controllers
             if (ModelState.IsValid)
             {
                 course.Created = DateTime.Now;
-                db.Courses.Add(course);
-                await db.SaveChangesAsync();
+                await courseRepo.CreateAsync(course);
                 return RedirectToAction("Index");
             }
 
@@ -68,7 +69,7 @@ namespace SES_Project.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = await db.Courses.FindAsync(id);
+            Course course = await courseRepo.GetByIdAsync(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -85,8 +86,7 @@ namespace SES_Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(course).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                await courseRepo.UpdateAsync(course);
                 return RedirectToAction("Index");
             }
             return View(course);
@@ -99,7 +99,7 @@ namespace SES_Project.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Course course = await db.Courses.FindAsync(id);
+            Course course = await courseRepo.GetByIdAsync(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -112,9 +112,8 @@ namespace SES_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Course course = await db.Courses.FindAsync(id);
-            db.Courses.Remove(course);
-            await db.SaveChangesAsync();
+            Course course = await courseRepo.GetByIdAsync(id);
+            await courseRepo.DeleteAsync(course);
             return RedirectToAction("Index");
         }
 
@@ -122,7 +121,7 @@ namespace SES_Project.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                courseRepo.DisposeDbContext();
             }
             base.Dispose(disposing);
         }
